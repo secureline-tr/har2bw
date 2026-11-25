@@ -17,6 +17,8 @@ SAFE_PATH = re.compile(r'/[A-Za-z0-9_./~<>\-]*\Z')
 
 def parse(config):
     """Recognize only line-oriented method maps and external path map entries."""
+    if not isinstance(config, str) or len(config.encode()) > 2*1024*1024:
+        raise ValueError('Configuration exceeds 2 MiB or is not text')
     methods, rules, unknown = {}, [], []
     mode, current, body, start = None, None, [], 0
     for lineno, raw in enumerate(config.splitlines(), 1):
@@ -106,7 +108,11 @@ def compare(report, config):
         observations.append({'id':row['id'],'method':row['method'],'path':row['path'],
                              'status':'textual_match' if hits else 'review_missing_or_unsupported',
                              'lines':hits})
-    return {'observations':observations,'unobserved_rule_lines':[r['line'] for r in rules if r['line'] not in matched],
+    duplicates = {}
+    for rule in rules:
+        key = (rule['path'], rule['casefold'], tuple(rule['methods']) if rule['methods'] is not None else None)
+        duplicates.setdefault(key, []).append(rule['line'])
+    return {'duplicate_rule_groups':[lines for lines in duplicates.values() if len(lines)>1], 'observations':observations,'unobserved_rule_lines':[r['line'] for r in rules if r['line'] not in matched],
             'unknown_lines':unknown,'warning':'Textual matches do not prove effective access. Unobserved rules are not necessarily redundant. Never auto-remove.'}
 
 def main():

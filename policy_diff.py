@@ -3,6 +3,7 @@ import argparse
 import json
 from pathlib import Path
 from har2bw import inventory
+from review_bundle import validate_approval
 
 def compare(report, previous, proposed):
     known = {r["id"]: r for r in report["candidates"]}
@@ -27,7 +28,15 @@ def main():
     a=p.parse_args()
     try:
         report=inventory(a.har,a.host.lower())
-        result=compare(report,json.loads(a.previous.read_text()),json.loads(a.proposed.read_text()))
+        previous=json.loads(a.previous.read_text())
+        proposed=json.loads(a.proposed.read_text())
+        if isinstance(previous,dict):
+            if previous.get('host') != report['host']:
+                raise ValueError('Previous approval belongs to another host')
+            previous=previous.get('approved_ids')
+        if isinstance(proposed,dict):
+            proposed=validate_approval(report,proposed)
+        result=compare(report,previous,proposed)
         print(json.dumps(result,indent=2))
     except (ValueError,OSError) as e:
         p.exit(2,f"Error: {e}\n")

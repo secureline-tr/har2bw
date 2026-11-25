@@ -8,6 +8,7 @@ import re
 from collections import Counter
 from pathlib import Path
 from urllib.parse import urlsplit
+from review_bundle import VERSION, approval_document, validate_approval, artifacts, write_private
 
 UUID = re.compile(r'[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}\Z')
 UUID_RX = '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'
@@ -48,7 +49,7 @@ def shape(path):
             parts.append('<uuid>')
             if kind != 'unsupported':
                 kind = 'dynamic'
-        elif (len(seg) > 64 or re.fullmatch(r'\d{6,}', seg)
+        elif (len(seg) > 64 or re.fullmatch(r'\d+', seg)
               or re.fullmatch(r'[A-Za-z0-9_-]{24,}', seg) and any(c.isdigit() for c in seg)
               or re.search(r'[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}', seg)):
             parts.append('<opaque>')
@@ -61,21 +62,34 @@ def shape(path):
 def inventory(files, host):
     if not HOST.fullmatch(host) or '..' in host:
         raise ValueError('Invalid hostname (use lowercase DNS name, no scheme or port)')
+    if len(host) > 253 or any(not re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', label) for label in host.split('.')):
+        raise ValueError('Invalid DNS hostname')
+    if not files:
+        raise ValueError('At least one HAR is required')
+    if sum(Path(f).stat().st_size for f in files) > MAX_BYTES:
+        raise ValueError('Combined HAR input exceeds 128 MiB')
     groups, skipped = {}, Counter()
     for filename in files:
         if Path(filename).stat().st_size > MAX_BYTES:
             raise ValueError('HAR exceeds 128 MiB limit')
         try:
-            data = json.loads(Path(filename).read_text(encoding='utf-8-sig'))
+            with Path(filename).open('rb') as source:
+                raw = source.read(MAX_BYTES+1)
+            if len(raw) > MAX_BYTES:
+                raise ValueError()
+            data = json.loads(raw.decode('utf-8-sig'))
             entries = data['log']['entries']
             if not isinstance(entries, list):
                 raise ValueError()
-        except (KeyError, TypeError, ValueError, UnicodeError):
+        except (KeyError, TypeError, ValueError, UnicodeError, RecursionError):
             raise ValueError('Invalid HAR structure') from None
         for entry in entries:
             try:
                 req = entry['request']
-                u = urlsplit(req['url'])
+                raw_url = req['url']
+                if not isinstance(raw_url, str) or any(ord(c) < 33 or ord(c) == 127 for c in raw_url) or '\\' in raw_url:
+                    raise ValueError()
+                u = urlsplit(raw_url)
                 if u.scheme not in ('http', 'https') or u.hostname != host or u.username is not None or u.password is not None or u.port not in (None, 443 if u.scheme == 'https' else 80):
                     skipped['other_origin'] += 1
                     continue
@@ -116,10 +130,10 @@ def inventory(files, host):
             r['warnings'].append('Unsafe or opaque path; no rule can be generated')
         r['observed_redirect'] = any(int(s) in (301,302,303,307,308) for s in r['statuses'])
         r['eligible'] = r['kind'] != 'unsupported' and (r['observed_success'] or r['observed_redirect'])
-    return {'host':host,'entries':sum(r['count'] for r in rows),'skipped':dict(skipped),'candidates':rows}
+    return {'schema_version':1,'version':VERSION,'host':host,'entries':sum(r['count'] for r in rows),'skipped':dict(skipped),'candidates':rows}
 
 
-def build(report, approvals, networks=(), dynamic=False, unrestricted_query=False, sensitive=False, redirect_only=False):
+def build(report, approvals, networks=(), dynamic=False, unrestricted_query=False, sensitive=False, redirect_only=False, trusted_real_ip=False):
     if not isinstance(approvals, list) or any(not isinstance(x,str) for x in approvals):
         raise ValueError('Approval file must be a JSON array of candidate IDs')
     selected = set(approvals)
@@ -130,12 +144,15 @@ def build(report, approvals, networks=(), dynamic=False, unrestricted_query=Fals
         raise ValueError('No approved candidates; no policy produced')
     prefix = 'h2bw_' + hashlib.sha256(report['host'].encode()).hexdigest()[:10]
     result = ['# HAR2BW DRAFT - review before deployment', '# Service: '+report['host'], '# Query strings and request bodies are NOT authorization checks.']
+    if networks and not trusted_real_ip:
+        raise ValueError('Internal bypass requires explicit confirmation of trusted real-IP configuration')
     nets = sorted(set(str(ipaddress.ip_network(n, strict=True)) for n in networks))
     if any(ipaddress.ip_network(n).prefixlen == 0 for n in nets):
         raise ValueError('Catch-all internal network is forbidden')
     result.extend(['',f'geo ${prefix}_internal {{','    default 0;'])
     result.extend('    '+n+' 1;' for n in nets)
     result.extend(['}', '', f'map "${prefix}_internal:$request_method:$uri" ${prefix}_block {{','    default 1;','    ~^1: 0;'])
+    query_rules = []
     last = None
     for r in report['candidates']:
         if r['id'] not in selected:
@@ -148,20 +165,28 @@ def build(report, approvals, networks=(), dynamic=False, unrestricted_query=Fals
             raise ValueError('Sensitive candidate requires --allow-sensitive: '+r['id'])
         if r['kind'] == 'dynamic' and not dynamic:
             raise ValueError('Dynamic candidate requires --allow-dynamic: '+r['id'])
-        if r['query'] and r['review'] != 'asset' and not unrestricted_query:
+        if r['query'] and not unrestricted_query:
             raise ValueError('Unrestricted query requires --allow-unrestricted-query: '+r['id'])
         if last != r['category']:
             result.append('    # '+r['category'])
             last = r['category']
         pattern = r['path'].replace('.', '[.]').replace('<uuid>', UUID_RX)
+        if r['query'] and unrestricted_query:
+            query_rules.append(f'    "~^{r["method"]}:{pattern}:\\?$" 0;')
         result.append(f'    "~^0:{r["method"]}:{pattern}$" 0;')
     result.extend(['}', ''])
-    guard = f'# Service SERVER_HTTP custom config for {report["host"]}\nif (${prefix}_block) {{\n    return 403;\n}}\n'
+    result.extend([f'map "$request_method:$uri:$is_args" ${prefix}_query_block {{',
+                   '    default 1;', '    ~:$ 0;', *query_rules, '}', '',
+                   f'map $request_uri ${prefix}_unsafe_path {{', '    default 0;',
+                   '    ~^[^?]*% 1;',
+                   '"~^[^?]*(?://|/[.]{1,2}(?:/|[?]|$))" 1;', '}', ''])
+    guard = f'# Service SERVER_HTTP custom config for {report["host"]}\nif (${prefix}_block) {{\n    return 403;\n}}\nif (${prefix}_unsafe_path) {{\n    return 403;\n}}\nif (${prefix}_query_block) {{\n    return 403;\n}}\n'
     return '\n'.join(result), guard
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--version', action='version', version=VERSION)
     sub = p.add_subparsers(dest='cmd',required=True)
     for name in ('scan','generate'):
         s=sub.add_parser(name)
@@ -171,6 +196,7 @@ def main():
         if name=='generate':
             s.add_argument('--approve',type=Path,required=True)
             s.add_argument('--internal',action='append',default=[])
+            s.add_argument('--confirm-trusted-real-ip',action='store_true',help='Confirm trusted proxies and spoofing tests before internal bypass')
             s.add_argument('--allow-sensitive',action='store_true')
             s.add_argument('--allow-redirect-only',action='store_true')
             s.add_argument('--allow-dynamic',action='store_true')
@@ -179,17 +205,16 @@ def main():
     try:
         report=inventory(a.har,a.host.lower())
         if a.cmd=='scan':
-            output={'report.json':json.dumps(report,indent=2,ensure_ascii=False)+'\n','approve.json':'[]\n'}
+            output={'report.json':json.dumps(report,indent=2,ensure_ascii=False)+'\n','approve.json':json.dumps(approval_document(report, []),indent=2)+'\n'}
         else:
             try:
                 approvals=json.loads(a.approve.read_text(encoding='utf-8'))
             except (ValueError,UnicodeError):
                 raise ValueError('Invalid approval JSON') from None
-            conf,guard=build(report,approvals,a.internal,a.allow_dynamic,a.allow_unrestricted_query,a.allow_sensitive,a.allow_redirect_only)
-            output={'har2bw-http.conf':conf,'har2bw-server-http.conf':guard}
-        a.out.mkdir(parents=True,exist_ok=False)
-        for name,content in output.items():
-            (a.out/name).write_text(content,encoding='utf-8')
+            approvals=validate_approval(report,approvals)
+            conf,guard=build(report,approvals,a.internal,a.allow_dynamic,a.allow_unrestricted_query,a.allow_sensitive,a.allow_redirect_only,a.confirm_trusted_real_ip)
+            output=artifacts(report,approvals,conf,guard,{'internal':a.internal,'trusted_real_ip':a.confirm_trusted_real_ip,'dynamic':a.allow_dynamic,'unrestricted_query':a.allow_unrestricted_query,'sensitive':a.allow_sensitive,'redirect_only':a.allow_redirect_only})
+        write_private(a.out,output)
         print(f'{report["entries"]} target requests; {len(report["candidates"])} candidates. Output: {a.out}')
     except (ValueError,OSError) as e:
         p.exit(2,f'Error: {e}\n')
