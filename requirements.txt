@@ -1,0 +1,2 @@
+# HAR2BW development dependencies
+streamlit==1.52.2
