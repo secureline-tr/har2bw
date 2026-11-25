@@ -1,4 +1,4 @@
-# HAR2BW 1.1.0
+# HAR2BW 1.2.0
 
 Local HAR inventory, explicit review, and default-deny BunkerWeb policy drafts.
 Python 3.11+; CLI uses the standard library. The web UI needs `requirements.txt`.
@@ -111,11 +111,38 @@ Comparison output also lists `possible_overlaps`: a rule with an `<uuid>`/`<int>
 pattern that textually matches another listed rule with an overlapping method. It
 is a review hint, not proof of redundancy; unrecognized syntax is never matched.
 
+## Reports, history, rollback plan, projects (v1.2)
+
+All of these are local and offline. None of them deploys, reloads or changes a WAF.
+
+- **CSV/PDF reports:** `python reporting.py --host H --format csv|pdf [--lang tr] --out NEWDIR har...`
+  (also buttons in the UI). CSV cells that start with `=`, `+`, `-` or `@` are
+  neutralized against spreadsheet formula injection. The PDF is a dependency-free,
+  text-only file (no scripts or links); Turkish letters are folded to ASCII there.
+  Reports contain paths: treat them as customer data.
+- **Project history:** set `HAR2BW_WORKSPACE` to a private directory. A project is
+  `<workspace>/<name>/history` (`[a-z0-9-]`, max 40). `python history.py --project P
+  save|list|verify|diff` stores each reviewed bundle as an append-only, read-only
+  version with a checksum chain; `verify` detects edited files and a missing parent.
+  This detects accidents, it is not a signature. The UI can save a generated bundle
+  to the selected project. The workspace is git-ignored; never commit it. In Docker
+  the filesystem is read-only: mount a private volume and set the variable yourself.
+- **Rollback plan (not an engine):** `python rollback_plan.py --workspace W --project P
+  --version V --snapshot snapshot.json` compares a verified known-good draft with a
+  read-only API snapshot and prints manual steps. Applying anything remains an
+  operator action in staging first.
+- **Optional UI password:** set `HAR2BW_UI_PASSWORD` (12+ characters). It is a single
+  shared password with a 5-attempt limit per session, not a user system. Keep the UI on
+  loopback or behind your own authenticating reverse proxy with TLS.
+- **Language:** the UI language selector (English/Türkçe) is in the sidebar.
+- **UI review aids:** comparison tables, candidate filter, previous-approval compare.
+
 ## Install as commands (optional)
 
 ```sh
 pip install .            # or: pip install '.[ui]' for the review UI
-har2bw --version         # also: har2bw-review, har2bw-diff, har2bw-snapshot
+har2bw --version         # also: har2bw-review, har2bw-diff, har2bw-snapshot,
+                         # har2bw-history, har2bw-rollback-plan, har2bw-report
 ```
 
 ## Known limitations
@@ -140,7 +167,7 @@ python test_nginx.py  # installed NGINX, ephemeral loopback listener only
 ```
 
 CI runs Python 3.11–3.13, real NGINX checks, UI tests, dependency audit, static
-security checks, Docker health/non-root checks, and isolated BunkerWeb 1.6.18
+security checks, a gitleaks history scan and repository hygiene tests, Docker health/non-root checks, and isolated BunkerWeb 1.6.18
 staging/rollback checks. See [staging validation](docs/staging-validation.md). See
 [deployment and rollback](docs/deployment.md) before manual staging validation.
 

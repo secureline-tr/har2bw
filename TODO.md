@@ -1,13 +1,38 @@
+# HAR2BW v1.2.0 roadmap (14 stages)
+
+- [x] 1 NGINX parser and HAR comparison (conservative subset, overlap hints)
+- [x] 2 Web UI integration (tables, filters, previous-approval compare)
+- [x] 3 Gitleaks history scan in CI + repository hygiene tests
+- [x] 4 Project backup/versioning (`history.py`, append-only, checksum chain)
+- [x] 5 Rollback: manual plan generator only. A rollback *engine* that changes a WAF is
+      out of scope under AGENTS.md; deployment and rollback stay operator actions.
+- [x] 6 BunkerWeb API: read-only snapshots; writes remain out of scope
+- [x] 7 Authentication: optional shared password; not a user system (UI stays local)
+- [x] 8 Multi-project: local workspace per project, git-ignored
+- [x] 9 CSV and PDF reports
+- [x] 10 Turkish/English UI strings (CLI messages remain English)
+- [ ] 11 Branch protection: owner setting, see docs/branch-protection.md
+- [x] 12 CI/CD and regression tests (72+ tests; run in CI after the PR is pushed)
+- [ ] 13 Release and tag: after merge, see docs/release.md
+- [x] 14 BunkerWeb 1.6.18 validation for 1.1.0; re-run staging manually for 1.2.0 before release
+
 # HAR2BW v1.1.0 follow-ups
 
 - [x] Run NGINX loopback integration (20/20 cases incl. `<int>`), Ruff, Bandit, pip-audit
-      and 54 unit/UI tests locally; not re-run in GitHub Actions or BunkerWeb staging yet.
+      and 54 unit/UI tests locally.
 - [x] Full Ruff/Bandit CI scope, packaging, known limitations, extra tests.
 - [x] Opt-in gated numeric ID patterns; generic risk terms with additive file.
 - [x] Textual overlap hints in policy comparison.
 - [x] Cut Actions minutes: no duplicate push+PR runs, staging only on main/manual, stale runs cancelled.
-- [ ] Push branch, verify all CI jobs, re-run isolated BunkerWeb staging/rollback for 1.1.0.
-- [ ] Confirm PR #2, tag v1.0.0/v1.1.0 and GitHub Release state (needs GitHub access).
+- [x] Verify all CI jobs and re-run isolated BunkerWeb staging/rollback for 1.1.0 (all green).
+  PR head `12b63d8`: CI https://github.com/secureline-tr/har2bw/actions/runs/45609272464
+  and staging https://github.com/secureline-tr/har2bw/actions/runs/45610029581.
+  Merge commit `a061d8a` on main: CI https://github.com/secureline-tr/har2bw/actions/runs/45610226992
+  and staging https://github.com/secureline-tr/har2bw/actions/runs/45610226979.
+  Earlier PR runs failed only because the account's Actions minutes were exhausted
+  (jobs never got a runner); they were re-run after the quota was restored.
+  Staging log contents (check counts) were not inspected here; see the run artifacts.
+- [ ] Confirm PR #2, tag v1.0.0/v1.1.0 and GitHub Release state.
 - [ ] Human review of the numeric-ID feature before relying on it in production.
 
 # HAR2BW v1.0.0

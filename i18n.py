@@ -1,0 +1,71 @@
+"""Turkish/English UI and report strings. Unknown keys fall back to English, then the key."""
+
+LANGUAGES = {'en': 'English', 'tr': 'Türkçe'}
+
+MESSAGES = {
+    'en': {
+        'title': 'HAR2BW — Policy Review',
+        'warning': 'Use authorized test traffic only. HARs may contain secrets. Policies are drafts; verify backend authorization.',
+        'language': 'Language',
+        'project': 'Project',
+        'project_none': '(no project)',
+        'project_new': 'New project name',
+        'project_create': 'Create project',
+        'save_history': 'Save reviewed bundle to project history',
+        'saved_history': 'Saved as {version}',
+        'history_title': 'Project history',
+        'history_empty': 'No saved versions yet.',
+        'filter_text': 'Filter candidates (path contains)',
+        'filter_category': 'Category',
+        'filter_all': 'All',
+        'filter_selected_hidden': 'Hidden candidates keep their selection state.',
+        'overlaps': 'Possible overlaps (review hints only)',
+        'unobserved': 'Unobserved rule lines',
+        'duplicates': 'Duplicate rule groups',
+        'unknown_lines': 'Unrecognized lines',
+        'prev_approval': 'Previous approval file (optional comparison)',
+        'download_csv': 'Download CSV report',
+        'download_pdf': 'Download PDF report',
+        'report_sensitive': 'Reports may contain sensitive paths; store them like customer data.',
+        'login': 'Password',
+        'login_button': 'Sign in',
+        'login_bad': 'Wrong password',
+        'login_wait': 'Too many attempts; reload the page and wait.',
+        'report_title': 'HAR2BW review report',
+    },
+    'tr': {
+        'title': 'HAR2BW — Politika İncelemesi',
+        'warning': 'Yalnızca yetkili test trafiği kullanın. HAR dosyaları gizli bilgi içerebilir. Politikalar taslaktır; arka uç yetkilendirmesini doğrulayın.',
+        'language': 'Dil',
+        'project': 'Proje',
+        'project_none': '(proje yok)',
+        'project_new': 'Yeni proje adı',
+        'project_create': 'Proje oluştur',
+        'save_history': 'İncelenen paketi proje geçmişine kaydet',
+        'saved_history': '{version} olarak kaydedildi',
+        'history_title': 'Proje geçmişi',
+        'history_empty': 'Henüz kayıtlı sürüm yok.',
+        'filter_text': 'Adayları filtrele (yol içerir)',
+        'filter_category': 'Kategori',
+        'filter_all': 'Tümü',
+        'filter_selected_hidden': 'Gizlenen adaylar seçim durumunu korur.',
+        'overlaps': 'Olası örtüşmeler (yalnızca inceleme ipucu)',
+        'unobserved': 'Gözlenmeyen kural satırları',
+        'duplicates': 'Yinelenen kural grupları',
+        'unknown_lines': 'Tanınmayan satırlar',
+        'prev_approval': 'Önceki onay dosyası (isteğe bağlı karşılaştırma)',
+        'download_csv': 'CSV raporunu indir',
+        'download_pdf': 'PDF raporunu indir',
+        'report_sensitive': 'Raporlar hassas yollar içerebilir; müşteri verisi gibi saklayın.',
+        'login': 'Parola',
+        'login_button': 'Giriş yap',
+        'login_bad': 'Yanlış parola',
+        'login_wait': 'Çok fazla deneme; sayfayı yenileyip bekleyin.',
+        'report_title': 'HAR2BW inceleme raporu',
+    },
+}
+
+
+def t(key, lang='en', **values):
+    text = MESSAGES.get(lang, {}).get(key) or MESSAGES['en'].get(key) or key
+    return text.format(**values) if values else text

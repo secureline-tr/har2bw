@@ -22,3 +22,5 @@ comparison.json
 staging-results/
 build/
 *.egg-info/
+workspace/
+.har2bw/

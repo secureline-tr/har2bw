@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0
+- Add append-only project history with checksum chain (`history.py`, UI save button).
+- Add manual rollback plan generator (`rollback_plan.py`); it reads local files only and
+  never applies or rolls back anything.
+- Add CSV and dependency-free PDF reports with CSV formula-injection protection.
+- Add optional shared UI password (`HAR2BW_UI_PASSWORD`), Turkish/English UI strings,
+  local project workspace, comparison tables, candidate filters and approval compare.
+- Add gitleaks history scan (pinned binary, checksum-verified) and repository hygiene tests.
+- Add branch protection and release procedures under docs/.
+- Docker image and build context include the new modules.
+
 ## 1.1.0
 - Add opt-in `--numeric-ids` / `--allow-numeric`: 1-9 digit segments become an
   `<int>` pattern behind an explicit gate; the option is bound into the report hash.
