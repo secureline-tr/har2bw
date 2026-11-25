@@ -32,13 +32,13 @@ def docker(*args, check=True):
     return run('docker', *args, check=check)
 
 
-def request(path, method='GET', headers=None, trusted=False):
+def request(path, method='GET', headers=None, trusted=False, attack=False):
     code = '''import http.client,json,sys
 p=json.loads(sys.argv[1]); c=http.client.HTTPConnection("172.29.83.10",8080,timeout=5)
 c.request(p["method"],p["path"],headers={"Host":"flow.example.test","User-Agent":"Mozilla/5.0 HAR2BW-staging",**p["headers"]})
 r=c.getresponse(); print(json.dumps({"status":r.status,"body":r.read().decode(errors="replace")})); c.close()
 '''
-    peer = PREFIX+('-trusted' if trusted else '-client')
+    peer = PREFIX+('-trusted' if trusted else '-attack' if attack else '-client')
     result = docker('exec', peer, 'python', '-c', code,
                     json.dumps({'path': path, 'method': method, 'headers': headers or {}}))
     return json.loads(result.stdout)
@@ -80,6 +80,13 @@ def policy(include_new):
 
 
 def start(conf, guard, phase):
+    print(f'{phase}: applying saved control-plane configuration', flush=True)
+    # Preserve WAF bans; use a distinct synthetic client for each independent phase.
+    phase_index = {'baseline':0, 'candidate':1, 'rollback':2}[phase]
+    for suffix, base_ip in (('client',40), ('attack',50)):
+        docker('rm', '-f', PREFIX+'-'+suffix, check=False)
+        docker('run', '-d', '--name', PREFIX+'-'+suffix, '--network', PREFIX,
+               '--ip', f'172.29.83.{base_ip+phase_index}', PYTHON, 'sleep', '1800')
     docker('rm', '-f', PREFIX+'-waf', check=False)
     env = {'SERVER_NAME': HOST, 'MULTISITE': 'yes', 'SERVICE_UI': 'no',
            'SERVICE_API': 'no', 'SERVICE_SCHEDULER': 'yes',
@@ -137,7 +144,7 @@ def exercise(phase, new_status):
     check('trusted-internal-client', '/internal', 200, results, trusted=True,
           headers={'X-Forwarded-For': '10.77.0.5'})
     # ModSecurity must block an attack on an otherwise explicitly allowed query endpoint.
-    check('waf-sqli', '/q?id=1%27%20OR%201%3D1--', 403, results)
+    check('waf-sqli', '/q?id=1%27%20OR%201%3D1--', 403, results, attack=True)
     (EVIDENCE/(phase+'-checks.json')).write_text(json.dumps(results, indent=2))
     logs = docker('logs', PREFIX+'-waf')
     (EVIDENCE/(phase+'-logs.txt')).write_text(logs.stdout+logs.stderr)
@@ -160,7 +167,7 @@ def main():
         docker('run', '-d', '--name', PREFIX+'-backend', '--network', PREFIX,
                '--ip', '172.29.83.20', '-v', backend+':/app/backend.py:ro',
                PYTHON, 'python', '/app/backend.py')
-        for suffix, ip in (('trusted', '30'), ('client', '40')):
+        for suffix, ip in (('trusted', '30'),):
             docker('run', '-d', '--name', PREFIX+'-'+suffix, '--network', PREFIX,
                    '--ip', '172.29.83.'+ip, PYTHON, 'sleep', '1800')
         baseline = policy(False)
@@ -189,7 +196,7 @@ def main():
     finally:
         logs = docker('logs', PREFIX+'-waf', check=False)
         (EVIDENCE/'final-logs.txt').write_text(logs.stdout+logs.stderr)
-        for suffix in ('waf', 'backend', 'trusted', 'client'):
+        for suffix in ('waf', 'backend', 'trusted', 'client', 'attack'):
             docker('rm', '-f', PREFIX+'-'+suffix, check=False)
         docker('volume', 'rm', PREFIX+'-data', check=False)
         docker('network', 'rm', PREFIX, check=False)
