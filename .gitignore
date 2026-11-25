@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+*.har
+!sample.har
+*.zip
+review/
+policy/
+*-review/
+report.json
+approve.json
+har2bw-http.conf
+har2bw-server-http.conf
+*.log
+.DS_Store
