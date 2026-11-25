@@ -1,10 +1,13 @@
 # Changelog
 
-## Unreleased
+## 1.2.1
+- Version bump: the report version is part of the approval-bound report hash, so re-scan and
+  approve again after upgrading from 1.2.0.
 - Complete the Turkish UI: all labels, review gates, download buttons, comparison tables,
   warnings and common error messages. Translations are display-only; report data (and its
   hash) stay English. Widgets now have stable keys so uploads and selections survive a
   language switch. Tests guard against untranslated or unkeyed widgets.
+- Add Turkish UI screenshots and Turkish/English README notes.
 
 ## 1.2.0
 - Add append-only project history with checksum chain (`history.py`, UI save button).

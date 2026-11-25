@@ -1,4 +1,4 @@
-# HAR2BW v1.2.0 roadmap (14 stages)
+# HAR2BW v1.2.1 roadmap (14 stages)
 
 - [x] 1 NGINX parser and HAR comparison (conservative subset, overlap hints)
 - [x] 2 Web UI integration (tables, filters, previous-approval compare)
@@ -13,7 +13,7 @@
 - [x] 10 Turkish/English UI complete (CLI messages and report data remain English)
 - [ ] 11 Branch protection: owner setting, see docs/branch-protection.md
 - [x] 12 CI/CD and regression tests (72+ tests; run in CI after the PR is pushed)
-- [ ] 13 Release and tag: tags v1.0.0, v1.1.0, v1.2.0 pushed; GitHub Release pages still to publish (docs/release.md)
+- [ ] 13 Release and tag: tags v1.0.0, v1.1.0, v1.2.0 pushed; v1.2.1 tag and GitHub Release pages still to publish (docs/release.md)
 - [x] 14 BunkerWeb 1.6.18 validation for 1.1.0 and 1.2.0 (staging on main: https://github.com/secureline-tr/har2bw/actions/runs/45612241254)
 
 # HAR2BW v1.1.0 follow-ups
