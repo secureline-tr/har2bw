@@ -12,7 +12,9 @@
 - [x] AGENTS.md, migration notes and manual staging/rollback instructions.
 - [x] Regression tests for CLI, security gates, UI state and API transport contract.
 - [x] Local unit/UI tests, NGINX allow/deny integration, Ruff, Bandit and dependency audit.
-- [ ] Verify final branch GitHub Actions (including Docker unavailable on local host).
+- [x] Verify release code in GitHub Actions, including Docker health/non-root checks.
+  All six jobs passed for `6b4d3c1`: https://github.com/secureline-tr/har2bw/actions/runs/45589851828
+  Local validation: 36 unit/UI tests, 16 NGINX request cases, Ruff, Bandit and pip-audit.
 
 ## Operator release gates
 
