@@ -10,7 +10,7 @@
 - [x] 7 Authentication: optional shared password; not a user system (UI stays local)
 - [x] 8 Multi-project: local workspace per project, git-ignored
 - [x] 9 CSV and PDF reports
-- [x] 10 Turkish/English UI strings (CLI messages remain English)
+- [x] 10 Turkish/English UI complete (CLI messages and report data remain English)
 - [ ] 11 Branch protection: owner setting, see docs/branch-protection.md
 - [x] 12 CI/CD and regression tests (72+ tests; run in CI after the PR is pushed)
 - [ ] 13 Release and tag: tags v1.0.0, v1.1.0, v1.2.0 pushed; GitHub Release pages still to publish (docs/release.md)

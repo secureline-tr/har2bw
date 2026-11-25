@@ -11,7 +11,7 @@ import streamlit as st
 import auth
 import history
 from har2bw import MAX_BYTES, build, inventory
-from i18n import LANGUAGES, t
+from i18n import LANGUAGES, t, tx
 from nginx_review import compare
 from policy_diff import compare as approval_compare
 from reporting import comparison_csv, report_csv, report_pdf
@@ -24,11 +24,11 @@ st.warning(t("warning",lang))
 try:
     _password=auth.configured_password()
 except ValueError as exc:
-    st.error(str(exc))
+    st.error(tx(str(exc),lang))
     st.stop()
 if _password and not st.session_state.get("authenticated"):
     with st.form("login"):
-        supplied=st.text_input(t("login",lang),type="password")
+        supplied=st.text_input(t("login",lang),type="password",key="login_password")
         if st.form_submit_button(t("login_button",lang)):
             attempts=st.session_state.get("attempts",0)
             if attempts>=auth.MAX_ATTEMPTS:
@@ -40,8 +40,8 @@ if _password and not st.session_state.get("authenticated"):
                 st.session_state.attempts=attempts+1
                 st.error(t("login_bad",lang))
     st.stop()
-host=st.text_input("Target hostname", "flow.example.test").strip().lower()
-uploads=st.file_uploader("HAR files", type=["har","json"], accept_multiple_files=True)
+host=st.text_input(t("host",lang), "flow.example.test", key="host").strip().lower()
+uploads=st.file_uploader(t("har_files",lang), type=["har","json"], accept_multiple_files=True, key="har_upload")
 workspace=os.environ.get("HAR2BW_WORKSPACE")
 project=None
 if workspace:
@@ -56,23 +56,23 @@ if workspace:
                 Path(workspace,created.strip(),"history").mkdir(mode=0o700,parents=True,exist_ok=True)
                 st.rerun()
             except (ValueError,OSError) as exc:
-                st.error(str(exc))
+                st.error(tx(str(exc),lang))
         if project:
             st.subheader(t("history_title",lang))
             versions=history.list_versions(history.project_root(workspace,project))
             st.dataframe(versions) if versions else st.caption(t("history_empty",lang))
-numeric_ids=st.checkbox("Generalize 1-9 digit numeric path segments (<int>); requires an explicit gate below")
+numeric_ids=st.checkbox(t("numeric_ids",lang), key="numeric_ids")
 scope=(host, numeric_ids, tuple(hashlib.sha256(u.getvalue()).hexdigest() for u in uploads))
 if st.session_state.get('input_scope') != scope:
     for key in ('report','draft','review_id'):
         st.session_state.pop(key,None)
     st.session_state.input_scope=scope
-if st.button("Clear review"):
+if st.button(t("clear",lang)):
     for key in list(st.session_state):
         if key != 'input_scope':
             del st.session_state[key]
     st.rerun()
-if st.button("Analyze", disabled=not uploads):
+if st.button(t("analyze",lang), disabled=not uploads):
     st.session_state.pop("report",None)
     try:
         if sum(x.size for x in uploads)>MAX_BYTES:
@@ -86,34 +86,38 @@ if st.button("Analyze", disabled=not uploads):
             st.session_state.report=inventory(paths,host,numeric_ids)
         st.session_state.review_id=uuid.uuid4().hex
     except (ValueError,OSError) as exc:
-        st.error(str(exc))
+        st.error(tx(str(exc),lang))
 report=st.session_state.get("report")
 if report and report["host"]==host:
-    st.metric("Requests",report["entries"])
-    st.metric("Candidates",len(report["candidates"]))
-    st.caption("Review scope: "+report["host"])
-    st.download_button("Download inventory (may contain sensitive paths)",json.dumps(report,indent=2),"report.json")
+    st.metric(t("requests",lang),report["entries"])
+    st.metric(t("candidates",lang),len(report["candidates"]))
+    st.caption(t("scope",lang,host=report["host"]))
+    st.download_button(t("dl_inventory",lang),json.dumps(report,indent=2),"report.json")
     st.caption(t("report_sensitive",lang))
     st.download_button(t("download_csv",lang),report_csv(report),"report.csv","text/csv")
     st.download_button(t("download_pdf",lang),report_pdf(report,lang),"report.pdf","application/pdf")
-    existing=st.file_uploader("Existing HTTP configuration (offline comparison)",type=['conf','txt'])
+    existing=st.file_uploader(t("existing_conf",lang),type=['conf','txt'],key="existing_conf")
     if existing is not None:
         try:
             if existing.size > 2*1024*1024:
                 raise ValueError('Configuration exceeds 2 MiB')
             comparison=compare(report,existing.getvalue().decode('utf-8'))
-            st.warning(comparison['warning'])
+            st.warning(tx(comparison['warning'],lang))
             for key,label in (('possible_overlaps','overlaps'),('unobserved_rule_lines','unobserved'),
                               ('duplicate_rule_groups','duplicates'),('unknown_lines','unknown_lines')):
                 if comparison[key]:
                     st.subheader(t(label,lang))
-                    st.dataframe(comparison[key] if key=='possible_overlaps' else [{'lines':x} for x in comparison[key]])
-            st.dataframe([{'status':o['status'],'method':o['method'],'path':o['path'],'lines':o['lines']} for o in comparison['observations']])
-            st.download_button('Download comparison',json.dumps(comparison,indent=2),'comparison.json')
+                    if key=='possible_overlaps':
+                        st.dataframe([{t('col_broad',lang):o['broad_line'],t('col_covered',lang):o['covered_lines']} for o in comparison[key]])
+                    else:
+                        st.dataframe([{t('col_lines',lang):x} for x in comparison[key]])
+            st.dataframe([{t('col_status',lang):t('st_'+o['status'],lang),t('col_method',lang):o['method'],
+                           t('col_path',lang):o['path'],t('col_lines',lang):o['lines']} for o in comparison['observations']])
+            st.download_button(t('dl_comparison',lang),json.dumps(comparison,indent=2),'comparison.json')
             st.download_button(t("download_csv",lang),comparison_csv(comparison),"comparison.csv","text/csv")
         except (ValueError,UnicodeError) as exc:
-            st.error(str(exc))
-    previous=st.file_uploader(t("prev_approval",lang),type=['json'])
+            st.error(tx(str(exc),lang))
+    previous=st.file_uploader(t("prev_approval",lang),type=['json'],key="prev_approval")
     if previous is not None:
         try:
             if previous.size > 1024*1024:
@@ -123,7 +127,7 @@ if report and report["host"]==host:
                 raise ValueError('Previous approval belongs to another host')
             st.json(approval_compare(report,old.get('approved_ids'),[]))
         except (ValueError,UnicodeError) as exc:
-            st.error(str(exc))
+            st.error(tx(str(exc),lang))
     needle=st.text_input(t("filter_text",lang),key="filter_text").strip().lower()
     categories=sorted({r["category"] for r in report["candidates"]})
     chosen=st.selectbox(t("filter_category",lang),[t("filter_all",lang),*categories])
@@ -134,20 +138,20 @@ if report and report["host"]==host:
                 continue
             if chosen!=t("filter_all",lang) and row["category"]!=chosen:
                 continue
-            label=f'{row["method"]} {row["path"]} | {row["review"]} | {row["statuses"]}'
+            label=f'{row["method"]} {row["path"]} | {t("review_"+row["review"],lang)} | {row["statuses"]}'
             st.checkbox(label,disabled=not row["eligible"],key=st.session_state.review_id+row["id"])
             for warning in row["warnings"]:
-                st.caption(warning)
+                st.caption(tx(warning,lang))
         selected=[r["id"] for r in report["candidates"]
                   if r["eligible"] and st.session_state.get(st.session_state.review_id+r["id"])]
-        sensitive=st.checkbox("I reviewed sensitive endpoints and backend authorization")
-        dynamic=st.checkbox("I reviewed generalized UUID paths")
-        numeric=st.checkbox("I reviewed generalized numeric ID paths")
-        query=st.checkbox("I accept unrestricted query strings for the selected observed query endpoints")
-        redirect=st.checkbox("I reviewed redirect-only candidates")
-        networks=st.text_area("Trusted internal CIDRs (optional, one per line)")
-        trusted_real_ip=st.checkbox("I verified trusted proxies and client IP spoofing protection for internal bypass")
-        submitted=st.form_submit_button("Generate draft")
+        sensitive=st.checkbox(t("gate_sensitive",lang),key="gate_sensitive")
+        dynamic=st.checkbox(t("gate_dynamic",lang),key="gate_dynamic")
+        numeric=st.checkbox(t("gate_numeric",lang),key="gate_numeric")
+        query=st.checkbox(t("gate_query",lang),key="gate_query")
+        redirect=st.checkbox(t("gate_redirect",lang),key="gate_redirect")
+        networks=st.text_area(t("cidrs",lang),key="cidrs")
+        trusted_real_ip=st.checkbox(t("gate_real_ip",lang),key="gate_real_ip")
+        submitted=st.form_submit_button(t("generate",lang))
     if submitted:
         st.session_state.pop("draft",None)
         try:
@@ -159,18 +163,18 @@ if report and report["host"]==host:
             st.session_state.draft_ids=list(selected)
             st.session_state.draft_options=options
         except ValueError as exc:
-            st.error(str(exc))
+            st.error(tx(str(exc),lang))
     draft=st.session_state.get("draft")
     if draft and draft[0]==st.session_state.review_id:
         st.code(draft[1],language="nginx")
-        st.download_button("Global HTTP draft",draft[1],"har2bw-http.conf")
-        st.download_button("Service SERVER_HTTP draft",draft[2],"har2bw-server-http.conf")
+        st.download_button(t("dl_http",lang),draft[1],"har2bw-http.conf")
+        st.download_button(t("dl_server",lang),draft[2],"har2bw-server-http.conf")
 
-        st.download_button("Download review bundle",draft[3],"har2bw-review.zip",mime="application/zip")
+        st.download_button(t("dl_bundle",lang),draft[3],"har2bw-review.zip",mime="application/zip")
         if workspace and project:
             if st.button(t("save_history",lang)):
                 try:
                     files=artifacts(report,st.session_state.draft_ids,draft[1],draft[2],st.session_state.draft_options)
                     st.success(t("saved_history",lang,version=history.save(history.project_root(workspace,project),files)))
                 except (ValueError,OSError) as exc:
-                    st.error(str(exc))
+                    st.error(tx(str(exc),lang))
