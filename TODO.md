@@ -5,6 +5,7 @@
 - [x] Full Ruff/Bandit CI scope, packaging, known limitations, extra tests.
 - [x] Opt-in gated numeric ID patterns; generic risk terms with additive file.
 - [x] Textual overlap hints in policy comparison.
+- [x] Cut Actions minutes: no duplicate push+PR runs, staging only on main/manual, stale runs cancelled.
 - [ ] Push branch, verify all CI jobs, re-run isolated BunkerWeb staging/rollback for 1.1.0.
 - [ ] Confirm PR #2, tag v1.0.0/v1.1.0 and GitHub Release state (needs GitHub access).
 - [ ] Human review of the numeric-ID feature before relying on it in production.

@@ -13,6 +13,7 @@
 - Add pyproject packaging (console scripts), a Known limitations README section,
   broader tests (API error paths, parser edge cases, numeric/NGINX loopback cases).
 - CI now runs full Ruff (configured in pyproject) and Bandit over the whole tree.
+- Reduce metered Actions minutes: push runs only on main, staging runs on main or manually, superseded runs are cancelled.
 
 ## 1.0.0
 - Continue the policy-parser branch with duplicate and missing/unobserved review.
