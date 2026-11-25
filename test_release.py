@@ -10,10 +10,11 @@ import unittest
 import urllib.error
 from pathlib import Path
 from unittest.mock import Mock, patch
-from har2bw import inventory, build, shape
-from review_bundle import approval_document, validate_approval, artifacts, archive, write_private
-from bunkerweb_api import Client, NoRedirect, MAX_RESPONSE
+
+from bunkerweb_api import MAX_RESPONSE, Client, NoRedirect
+from har2bw import build, inventory, shape
 from nginx_review import compare
+from review_bundle import approval_document, archive, artifacts, validate_approval, write_private
 
 
 class ReleaseTests(unittest.TestCase):

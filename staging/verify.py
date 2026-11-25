@@ -6,14 +6,14 @@ external configuration, or a production Docker context.
 import hashlib
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import time
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from har2bw import inventory, build  # noqa: E402
+from har2bw import build, inventory  # noqa: E402
 
 IMAGE = 'bunkerity/bunkerweb-all-in-one:1.6.18'
 PYTHON = 'python:3.12-slim'

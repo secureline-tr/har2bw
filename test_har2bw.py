@@ -2,7 +2,9 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from har2bw import inventory, build, shape
+
+from har2bw import build, inventory, shape
+
 
 class Tests(unittest.TestCase):
     def setUp(self):

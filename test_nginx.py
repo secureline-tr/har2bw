@@ -4,14 +4,16 @@ import socket
 import subprocess
 import tempfile
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 from pathlib import Path
-from har2bw import inventory, build
+
+from har2bw import build, inventory
+
 
 def status(url, method='GET'):
     try:
-        with urllib.request.urlopen(urllib.request.Request(url, method=method), timeout=3) as r:
+        with urllib.request.urlopen(urllib.request.Request(url, method=method), timeout=3) as r:  # nosec B310 - http loopback URL built by this test
             return r.status
     except urllib.error.HTTPError as e:
         return e.code
@@ -20,11 +22,11 @@ def main():
     with tempfile.TemporaryDirectory(prefix='har2bw-test-') as d:
         p=Path(d)
         uuid='01234567-89ab-4cde-8123-0123456789ab'
-        rows=[('GET','/q.js?cache=synthetic'),('GET','/a.js'),('GET','/api/form/'+uuid+'/details'),('POST','/api/approve')]
+        rows=[('GET','/q.js?cache=synthetic'),('GET','/a.js'),('GET','/api/form/'+uuid+'/details'),('POST','/api/approve'),('GET','/api/item/42/view')]
         har={'log':{'entries':[{'request':{'method':m,'url':'https://flow.example.test'+u},'response':{'status':200}} for m,u in rows]}}
         (p/'sample.har').write_text(json.dumps(har))
-        r=inventory([p/'sample.har'],'flow.example.test')
-        conf,guard=build(r,[x['id'] for x in r['candidates']],dynamic=True,sensitive=True,unrestricted_query=True)
+        r=inventory([p/'sample.har'],'flow.example.test',numeric_ids=True)
+        conf,guard=build(r,[x['id'] for x in r['candidates']],dynamic=True,sensitive=True,unrestricted_query=True,numeric=True)
         (p/'map.conf').write_text(conf); (p/'guard.conf').write_text(guard)
         with socket.socket() as s:
             s.bind(('127.0.0.1',0)); port=s.getsockname()[1]
@@ -54,7 +56,7 @@ http {{
                 try:
                     status(base+'/a.js');break
                 except OSError: time.sleep(.05)
-            cases=[('GET','/a.js?x=1',403),('GET','/q.js?x=1',200),('GET','/q.js',200),('POST','/q.js?x=1',403),('GET','/%61.js',403),('GET','//a.js',403),('GET','/x/../a.js',403),('GET','/a.js',200),('POST','/a.js',403),('GET','/A.js',403),('GET','/admin',403),('GET','/api/form/'+uuid+'/details',200),('GET','/api/form/'+uuid+'/other',403),('GET','/api/form/invalid/details',403),('POST','/api/approve',200),('GET','/api/approve',403)]
+            cases=[('GET','/a.js?x=1',403),('GET','/q.js?x=1',200),('GET','/q.js',200),('POST','/q.js?x=1',403),('GET','/%61.js',403),('GET','//a.js',403),('GET','/x/../a.js',403),('GET','/a.js',200),('POST','/a.js',403),('GET','/A.js',403),('GET','/admin',403),('GET','/api/form/'+uuid+'/details',200),('GET','/api/form/'+uuid+'/other',403),('GET','/api/form/invalid/details',403),('POST','/api/approve',200),('GET','/api/approve',403),('GET','/api/item/7/view',200),('GET','/api/item/1234567890/view',403),('GET','/api/item/x/view',403),('GET','/api/item/7/other',403)]
             for method,path,expected in cases:
                 got=status(base+path,method)
                 assert got==expected,(method,path,got,expected)

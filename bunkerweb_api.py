@@ -7,6 +7,7 @@ import ssl
 import urllib.error
 import urllib.request
 from urllib.parse import urlsplit
+
 from review_bundle import write_private
 
 MAX_RESPONSE = 2 * 1024 * 1024

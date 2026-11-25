@@ -18,7 +18,11 @@ Before BunkerWeb deployment: export current custom configs and settings to a pro
 
 API writes and deployment are intentionally excluded. The optional snapshot utility is read-only; no automated network deployment is performed.
 
-## v1.0.0 manual staging procedure
+## v1.0.0 manual staging procedure (still applies to v1.1.0)
+
+If `--numeric-ids` or `--risk-terms` was used, scan, generate and comparison
+commands must all use the same options, and cross-object tests must include
+neighbouring numeric IDs owned by another user.
 
 1. Re-scan with v1 and review the versioned approval document. Do not reuse legacy
    ID arrays or bypass a report hash mismatch. Select only authorized endpoints.

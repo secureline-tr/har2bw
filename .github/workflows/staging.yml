@@ -1,9 +1,13 @@
 name: BunkerWeb staging and rollback
+# Release gate: runs on main and on demand (Actions > Run workflow), not on every PR commit,
+# to save metered runner minutes. Run it manually on a PR branch before releasing.
 on:
   push:
-    branches: [main, codex/har2bw-v1]
-  pull_request:
+    branches: [main]
   workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:

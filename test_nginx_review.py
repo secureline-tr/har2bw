@@ -1,6 +1,8 @@
 import unittest
-from nginx_review import compare, parse
+
 from har2bw import UUID_RX
+from nginx_review import compare, parse
+
 
 class ReviewTests(unittest.TestCase):
     def test_method_scoped(self):

@@ -1,3 +1,15 @@
+# HAR2BW v1.1.0 follow-ups
+
+- [x] Run NGINX loopback integration (20/20 cases incl. `<int>`), Ruff, Bandit, pip-audit
+      and 54 unit/UI tests locally; not re-run in GitHub Actions or BunkerWeb staging yet.
+- [x] Full Ruff/Bandit CI scope, packaging, known limitations, extra tests.
+- [x] Opt-in gated numeric ID patterns; generic risk terms with additive file.
+- [x] Textual overlap hints in policy comparison.
+- [x] Cut Actions minutes: no duplicate push+PR runs, staging only on main/manual, stale runs cancelled.
+- [ ] Push branch, verify all CI jobs, re-run isolated BunkerWeb staging/rollback for 1.1.0.
+- [ ] Confirm PR #2, tag v1.0.0/v1.1.0 and GitHub Release state (needs GitHub access).
+- [ ] Human review of the numeric-ID feature before relying on it in production.
+
 # HAR2BW v1.0.0
 
 - [x] Import and verify existing source, tests and all three upstream branches.

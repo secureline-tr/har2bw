@@ -1,5 +1,7 @@
 import unittest
+
 from policy_diff import compare
+
 
 class DiffTests(unittest.TestCase):
     def test_changes(self):

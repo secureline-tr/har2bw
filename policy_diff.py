@@ -2,8 +2,10 @@
 import argparse
 import json
 from pathlib import Path
-from har2bw import inventory
+
+from har2bw import inventory, load_risk_terms
 from review_bundle import validate_approval
+
 
 def compare(report, previous, proposed):
     known = {r["id"]: r for r in report["candidates"]}
@@ -22,12 +24,14 @@ def compare(report, previous, proposed):
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--host", required=True)
+    p.add_argument("--numeric-ids",action="store_true",help="Use the same value as the scan that produced the approval")
+    p.add_argument("--risk-terms",type=Path,help="Use the same file as the scan")
     p.add_argument("--previous", type=Path, required=True)
     p.add_argument("--proposed", type=Path, required=True)
     p.add_argument("har", nargs="+")
     a=p.parse_args()
     try:
-        report=inventory(a.har,a.host.lower())
+        report=inventory(a.har,a.host.lower(),a.numeric_ids,load_risk_terms(a.risk_terms) if a.risk_terms else ())
         previous=json.loads(a.previous.read_text())
         proposed=json.loads(a.proposed.read_text())
         if isinstance(previous,dict):

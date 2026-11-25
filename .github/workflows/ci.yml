@@ -1,5 +1,12 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -25,8 +32,9 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install ruff bandit pip-audit
-      - run: ruff check --select E9,F63,F7,F82 .
-      - run: bandit -ll -iii har2bw.py policy_diff.py web.py review_bundle.py nginx_review.py bunkerweb_api.py
+      - run: ruff check .
+      - run: bandit -q -ll -iii -r . -x ./.git
+      - run: python -m pip install . && har2bw --version
       - run: pip-audit -r requirements.txt
   docker:
     runs-on: ubuntu-latest
