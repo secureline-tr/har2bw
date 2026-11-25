@@ -1,2 +1,3 @@
-# HAR2BW development dependencies
-streamlit==1.52.2
+# Security minimums from CI audit; verify dependency resolution in CI
+streamlit>=1.54.0,<2
+pillow>=13.0.0,<14
