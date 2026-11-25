@@ -4,6 +4,26 @@ Local HAR inventory, explicit review, and default-deny BunkerWeb policy drafts.
 Python 3.11+; CLI uses the standard library. The web UI needs `requirements.txt`.
 No automatic deployment, reload, rule deletion, or WAF disabling.
 
+## Screenshots
+
+Local review UI with the synthetic `sample.har` (host `flow.example.test`); no real traffic or customer data.
+
+**1. Analyze HAR files.** Upload one or more HARs for an exact hostname and get the request and candidate counts.
+
+![Analyze step with an uploaded sample HAR](docs/images/01-analyze.png)
+
+**2. Review candidates.** Filter by path or category; every candidate shows its warnings, and sensitive or high-risk ones need explicit gates.
+
+![Candidate list with filters, warnings and selection checkboxes](docs/images/02-candidates.png)
+
+**3. Compare with an existing configuration.** Offline, textual comparison: overlaps, unobserved rules and observations. Hints only; nothing is removed automatically.
+
+![Comparison tables for overlaps, unobserved rules and observed requests](docs/images/03-comparison.png)
+
+**4. Generate a default-deny draft.** Method-scoped NGINX maps plus query and unsafe-path guards, exported as a review bundle. Nothing is deployed.
+
+![Generated default-deny NGINX draft](docs/images/04-draft.png)
+
 ## Scan and generate
 
 Capture authorized synthetic traffic in DevTools. Keep customer HAR files outside
