@@ -9,3 +9,8 @@
 !nginx_review.py
 !policy_diff.py
 !bunkerweb_api.py
+!history.py
+!rollback_plan.py
+!reporting.py
+!i18n.py
+!auth.py

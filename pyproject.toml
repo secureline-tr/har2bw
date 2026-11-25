@@ -1,6 +1,6 @@
 [project]
 name = "har2bw"
-version = "1.1.0"
+version = "1.2.0"
 description = "Offline HAR inventory and reviewed default-deny BunkerWeb policy drafts"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -14,13 +14,16 @@ har2bw = "har2bw:main"
 har2bw-review = "nginx_review:main"
 har2bw-diff = "policy_diff:main"
 har2bw-snapshot = "bunkerweb_api:main"
+har2bw-history = "history:main"
+har2bw-rollback-plan = "rollback_plan:main"
+har2bw-report = "reporting:main"
 
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["har2bw", "nginx_review", "policy_diff", "review_bundle", "bunkerweb_api"]
+py-modules = ["har2bw", "nginx_review", "policy_diff", "review_bundle", "bunkerweb_api", "history", "rollback_plan", "reporting", "i18n", "auth"]
 
 [tool.ruff]
 line-length = 140

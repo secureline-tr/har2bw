@@ -1,3 +1,21 @@
+# HAR2BW v1.2.0 roadmap (14 stages)
+
+- [x] 1 NGINX parser and HAR comparison (conservative subset, overlap hints)
+- [x] 2 Web UI integration (tables, filters, previous-approval compare)
+- [x] 3 Gitleaks history scan in CI + repository hygiene tests
+- [x] 4 Project backup/versioning (`history.py`, append-only, checksum chain)
+- [x] 5 Rollback: manual plan generator only. A rollback *engine* that changes a WAF is
+      out of scope under AGENTS.md; deployment and rollback stay operator actions.
+- [x] 6 BunkerWeb API: read-only snapshots; writes remain out of scope
+- [x] 7 Authentication: optional shared password; not a user system (UI stays local)
+- [x] 8 Multi-project: local workspace per project, git-ignored
+- [x] 9 CSV and PDF reports
+- [x] 10 Turkish/English UI strings (CLI messages remain English)
+- [ ] 11 Branch protection: owner setting, see docs/branch-protection.md
+- [x] 12 CI/CD and regression tests (72+ tests; run in CI after the PR is pushed)
+- [ ] 13 Release and tag: after merge, see docs/release.md
+- [x] 14 BunkerWeb 1.6.18 validation for 1.1.0; re-run staging manually for 1.2.0 before release
+
 # HAR2BW v1.1.0 follow-ups
 
 - [x] Run NGINX loopback integration (20/20 cases incl. `<int>`), Ruff, Bandit, pip-audit

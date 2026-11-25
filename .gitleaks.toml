@@ -1,0 +1,10 @@
+title = "HAR2BW gitleaks configuration"
+
+[extend]
+useDefault = true
+
+# Synthetic fixtures only. Never add a real credential or customer path here.
+[[allowlists]]
+description = "Synthetic staging bearer token used against the disposable local backend"
+regexes = ['''synthetic-user-[a-z]''']
+paths = ['''staging/''', '''test_.*\.py''']
