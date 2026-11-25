@@ -24,6 +24,12 @@ Local review UI with the synthetic `sample.har` (host `flow.example.test`); no r
 
 ![Generated default-deny NGINX draft](docs/images/04-draft.png)
 
+**Türkçe arayüz.** The sidebar language selector switches the whole UI between English and Türkçe, including labels, warnings, review gates and error messages. Selections and uploads are kept when you switch.
+
+![Candidate review in Turkish](docs/images/05-turkish-candidates.png)
+
+![Review gates and draft button in Turkish](docs/images/06-turkish-gates.png)
+
 ## Scan and generate
 
 Capture authorized synthetic traffic in DevTools. Keep customer HAR files outside
@@ -154,7 +160,9 @@ All of these are local and offline. None of them deploys, reloads or changes a W
 - **Optional UI password:** set `HAR2BW_UI_PASSWORD` (12+ characters). It is a single
   shared password with a 5-attempt limit per session, not a user system. Keep the UI on
   loopback or behind your own authenticating reverse proxy with TLS.
-- **Language:** the UI language selector (English/Türkçe) is in the sidebar.
+- **Language:** the sidebar selector switches the complete UI between English and Türkçe
+  (labels, warnings, review gates, comparison tables and common error messages). Reports,
+  CLI output and approval-bound report data stay English; translations are display-only.
 - **UI review aids:** comparison tables, candidate filter, previous-approval compare.
 
 ## Install as commands (optional)

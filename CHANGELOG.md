@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+- Complete the Turkish UI: all labels, review gates, download buttons, comparison tables,
+  warnings and common error messages. Translations are display-only; report data (and its
+  hash) stay English. Widgets now have stable keys so uploads and selections survive a
+  language switch. Tests guard against untranslated or unkeyed widgets.
+
 ## 1.2.0
 - Add append-only project history with checksum chain (`history.py`, UI save button).
 - Add manual rollback plan generator (`rollback_plan.py`); it reads local files only and

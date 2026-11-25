@@ -72,5 +72,5 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -r requirements.txt
-      - run: python -m unittest test_web test_v12 -v
+      - run: python -m unittest test_web test_v12 test_i18n -v
       - run: python -c 'from streamlit.testing.v1 import AppTest; a=AppTest.from_file("web.py").run(); assert not a.exception; assert a.title[0].value.startswith("HAR2BW")'
