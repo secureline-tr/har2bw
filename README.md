@@ -1,4 +1,4 @@
-# HAR2BW 1.2.0
+# HAR2BW 1.2.1
 
 Local HAR inventory, explicit review, and default-deny BunkerWeb policy drafts.
 Python 3.11+; CLI uses the standard library. The web UI needs `requirements.txt`.

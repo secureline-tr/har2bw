@@ -1,6 +1,6 @@
 [project]
 name = "har2bw"
-version = "1.2.0"
+version = "1.2.1"
 description = "Offline HAR inventory and reviewed default-deny BunkerWeb policy drafts"
 readme = "README.md"
 requires-python = ">=3.11"
