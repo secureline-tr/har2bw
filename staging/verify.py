@@ -104,7 +104,8 @@ def start(conf, guard, phase):
     deadline = time.monotonic()+240
     while time.monotonic() < deadline:
         try:
-            if request('/public')['status'] == 200:
+            if (request('/public')['status'] == 200
+                    and request('/new')['status'] == (200 if phase == 'candidate' else 403)):
                 break
         except (subprocess.SubprocessError, ValueError):
             pass
