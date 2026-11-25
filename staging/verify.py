@@ -44,14 +44,23 @@ r=c.getresponse(); print(json.dumps({"status":r.status,"body":r.read().decode(er
     return json.loads(result.stdout)
 
 
+def audit():
+    code = 'import urllib.request; print(urllib.request.urlopen("http://127.0.0.1:8000/__audit", timeout=5).read().decode())'
+    return json.loads(docker('exec', PREFIX+'-backend', 'python', '-c', code).stdout)
+
+
 def check(label, path, expected, records, **kwargs):
+    before = audit()
     result = request(path, **kwargs)
     if result['status'] != expected:
         raise AssertionError(f'{label}: expected {expected}, got {result}')
-    # Auth checks must reach the app, not merely happen to get blocked by the WAF.
+    # BunkerWeb intercepts error bodies; independently prove backend auth ran.
+    after = audit()
     if label in ('unauthenticated', 'cross-object', 'authorized'):
-        if result['body'] != f'synthetic-backend:{expected}':
+        if len(after) != len(before)+1 or after[-1] != {'path':path, 'method':'GET', 'status':expected}:
             raise AssertionError(f'{label}: backend authorization not exercised')
+    if label == 'waf-sqli' and after != before:
+        raise AssertionError('Attack reached the backend instead of being blocked by the WAF')
     records.append({'check': label, 'status': expected})
 
 

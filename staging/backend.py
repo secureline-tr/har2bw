@@ -1,6 +1,9 @@
 """Synthetic staging app. Never use for real authentication or customer data."""
+import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
+
+AUDIT = []
 
 OWNER = '01234567-89ab-4cde-8123-0123456789ab'
 
@@ -16,7 +19,12 @@ class Handler(BaseHTTPRequestHandler):
                 code = 403
         elif path not in ('/public', '/new', '/internal', '/q'):
             code = 404
-        body = f'synthetic-backend:{code}'.encode()
+        if path == '/__audit':
+            code = 200
+            body = json.dumps(AUDIT).encode()
+        else:
+            AUDIT.append({'path': self.path, 'method': self.command, 'status': code})
+            body = f'synthetic-backend:{code}'.encode()
         self.send_response(code)
         self.send_header('Content-Type', 'text/plain')
         self.send_header('Content-Length', str(len(body)))
