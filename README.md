@@ -102,7 +102,8 @@ python test_nginx.py  # installed NGINX, ephemeral loopback listener only
 ```
 
 CI runs Python 3.11–3.13, real NGINX checks, UI tests, dependency audit, static
-security checks, and Docker health/non-root checks. See
+security checks, Docker health/non-root checks, and isolated BunkerWeb 1.6.18
+staging/rollback checks. See [staging validation](docs/staging-validation.md). See
 [deployment and rollback](docs/deployment.md) before manual staging validation.
 
 HAR reports and configs remain sensitive: headers, cookies, bodies and query

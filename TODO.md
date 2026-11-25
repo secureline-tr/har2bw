@@ -18,9 +18,11 @@
 
 ## Operator release gates
 
-- [ ] Validate with the target BunkerWeb version and synthetic staging traffic.
-- [ ] Verify service guard wiring, proxy trust, backend authorization and rollback.
-- [ ] Review and merge the release branch; publish v1.0.0 tag/release after staging.
+- [x] Validate BunkerWeb 1.6.18 with synthetic traffic in disposable GitHub-hosted staging.
+- [x] Verify guard wiring, proxy trust, backend authorization and rollback: 48 checks passed.
+  Evidence: https://github.com/secureline-tr/har2bw/actions/runs/45592324840
+  Full scope and checksum evidence: docs/staging-validation.md.
+Publication is tracked in PR #2 and GitHub Releases after the final commit checks.
 
 The original v0.1–v0.6 milestones are consolidated into v1.0.0; historical tags
 are not retroactively created. Automatic API writes/deployments are out of scope
