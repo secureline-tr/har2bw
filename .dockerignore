@@ -5,3 +5,7 @@
 !.streamlit/
 !.streamlit/config.toml
 !Dockerfile
+!review_bundle.py
+!nginx_review.py
+!policy_diff.py
+!bunkerweb_api.py

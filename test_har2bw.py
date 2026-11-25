@@ -41,13 +41,13 @@ class Tests(unittest.TestCase):
         self.assertIn('POST:/api/do',build(r,ids,sensitive=True)[0])
     def test_uuid_and_query_gates(self):
         u='01234567-89ab-4cde-8123-0123456789ab'
-        r=self.report([('GET',f'https://flow.example.test/api/form/{u}/17?token=SECRET',200)])
+        r=self.report([('GET',f'https://flow.example.test/api/form/{u}/details?token=SECRET',200)])
         ids=[r['candidates'][0]['id']]
         self.assertNotIn(u,json.dumps(r))
         with self.assertRaises(ValueError): build(r,ids,sensitive=True,dynamic=True)
         with self.assertRaises(ValueError): build(r,ids,sensitive=True,unrestricted_query=True)
         c,_=build(r,ids,sensitive=True,dynamic=True,unrestricted_query=True)
-        self.assertIn('{12}/17$',c)
+        self.assertIn('{12}/details$',c)
     def test_injection_and_opaque(self):
         for path in ['/foo%2fbar','/a/../b','/a//b','/a;return','/a"','/a/123456789']:
             self.assertEqual(shape(path)[1],'unsupported')
@@ -58,7 +58,8 @@ class Tests(unittest.TestCase):
     def test_internal_validation(self):
         r=self.report([('GET','https://flow.example.test/a.js',200)])
         ids=[r['candidates'][0]['id']]
-        with self.assertRaises(ValueError): build(r,ids,['0.0.0.0/0'])
-        self.assertIn('10.1.0.0/24 1;',build(r,ids,['10.1.0.0/24'])[0])
+        with self.assertRaises(ValueError): build(r,ids,['0.0.0.0/0'],trusted_real_ip=True)
+        with self.assertRaises(ValueError): build(r,ids,['10.1.0.0/24'])
+        self.assertIn('10.1.0.0/24 1;',build(r,ids,['10.1.0.0/24'],trusted_real_ip=True)[0])
 
 if __name__=='__main__': unittest.main()

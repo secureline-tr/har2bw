@@ -15,3 +15,8 @@ har2bw-http.conf
 har2bw-server-http.conf
 *.log
 .DS_Store
+snapshot.json
+snapshots/
+manifest.json
+comparison.json
+staging-results/
