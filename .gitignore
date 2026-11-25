@@ -20,3 +20,5 @@ snapshots/
 manifest.json
 comparison.json
 staging-results/
+build/
+*.egg-info/

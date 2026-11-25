@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.1.0
+- Add opt-in `--numeric-ids` / `--allow-numeric`: 1-9 digit segments become an
+  `<int>` pattern behind an explicit gate; the option is bound into the report hash.
+- Replace application-specific high-risk path terms with generic built-ins plus an
+  additive `--risk-terms FILE`. Warnings only; candidate IDs and gates are unchanged.
+  Migration: re-scan, as reports now carry `options` and approvals are hash-bound.
+- Comparison reports `possible_overlaps` (placeholder rule textually covering another
+  rule). Hints only; nothing is auto-removed and unknown syntax is never matched.
+- UI: numeric generalization and its review gate; `--numeric-ids`/`--risk-terms` on
+  comparison CLIs so approvals stay comparable.
+- Add pyproject packaging (console scripts), a Known limitations README section,
+  broader tests (API error paths, parser edge cases, numeric/NGINX loopback cases).
+- CI now runs full Ruff (configured in pyproject) and Bandit over the whole tree.
+
 ## 1.0.0
 - Continue the policy-parser branch with duplicate and missing/unobserved review.
 - Bind CLI approvals to the derived inventory and export checksum manifests/ZIPs.
