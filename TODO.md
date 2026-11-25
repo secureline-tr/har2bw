@@ -12,9 +12,11 @@
 - [x] 9 CSV and PDF reports
 - [x] 10 Turkish/English UI complete (CLI messages and report data remain English)
 - [ ] 11 Branch protection: owner setting, see docs/branch-protection.md
-- [x] 12 CI/CD and regression tests (72+ tests; run in CI after the PR is pushed)
-- [ ] 13 Release and tag: tags v1.0.0, v1.1.0, v1.2.0 pushed; v1.2.1 tag and GitHub Release pages still to publish (docs/release.md)
-- [x] 14 BunkerWeb 1.6.18 validation for 1.1.0 and 1.2.0 (staging on main: https://github.com/secureline-tr/har2bw/actions/runs/45612241254)
+- [x] 12 CI/CD and regression tests (80 tests, green in CI on main)
+- [ ] 13 Release and tag: tags v1.0.0, v1.1.0, v1.2.0 and v1.2.1 are pushed; GitHub Release pages still to publish (docs/release.md)
+- [x] 14 BunkerWeb 1.6.18 validation for 1.1.0, 1.2.0 and 1.2.1 (staging on main:
+      1.2.0 https://github.com/secureline-tr/har2bw/actions/runs/45612241254,
+      1.2.1 https://github.com/secureline-tr/har2bw/actions/runs/45624236725)
 
 # HAR2BW v1.1.0 follow-ups
 
@@ -32,9 +34,10 @@
   Earlier PR runs failed only because the account's Actions minutes were exhausted
   (jobs never got a runner); they were re-run after the quota was restored.
   Staging log contents (check counts) were not inspected here; see the run artifacts.
-- [x] PR #2 (v1.0.0) is merged (2026-11-25); tags v1.0.0 (`3bea371`), v1.1.0 (`a061d8a`) and
-      v1.2.0 (`ad36341`) exist on origin.
-- [ ] Publish GitHub Release pages for v1.1.0 and v1.2.0 (notes derived from CHANGELOG.md).
+- [x] PR #2 (v1.0.0) is merged (2026-11-25). Annotated tags on origin: v1.0.0 (`3bea371`),
+      v1.1.0 (`a061d8a`), v1.2.0 (`ad36341`), v1.2.1 (`26fc53b`).
+- [ ] Publish GitHub Release pages for v1.1.0, v1.2.0 and v1.2.1 in that order (notes derived from
+      CHANGELOG.md; the last one published becomes "latest").
 - [ ] Human review of the numeric-ID feature before relying on it in production.
 
 # HAR2BW v1.0.0
@@ -61,7 +64,7 @@
 - [x] Verify guard wiring, proxy trust, backend authorization and rollback: 48 checks passed.
   Evidence: https://github.com/secureline-tr/har2bw/actions/runs/45592324840
   Full scope and checksum evidence: docs/staging-validation.md.
-Publication: PR #2 is merged and the v1.0.0 tag exists; GitHub Release pages are tracked above.
+Publication: PR #2 is merged and all four version tags exist; GitHub Release pages are tracked above.
 
 The original v0.1–v0.6 milestones are consolidated into v1.0.0; historical tags
 are not retroactively created. Automatic API writes/deployments are out of scope
